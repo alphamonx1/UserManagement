@@ -3,23 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using ProductService.Application.Repositories;
-using ProductService.Infrastructure.Database;
-using ProductService.Infrastructure.Repositories;
 using System.Text;
+using UserService.Application.Services;
+using UserService.Infrastructure.Database;
+using UserService.Infrastructure.Services;
 
-namespace ProductService.Infrastructure
+namespace UserService.Infrastructure
 {
-    public static class DependencyInjection
+    namespace UserService.Infrastructure
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static class DependencyInjection
         {
-            services.AddDbContext<ProductDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+            {
+                services.AddDbContext<UserDbContext>(options =>
+                    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddScoped<IProductRepository, ProductRepository>();
+                services.AddScoped<IUserService,AuthService>();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters
@@ -33,9 +35,10 @@ namespace ProductService.Infrastructure
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:Secret"]))
                     };
                 });
-            services.AddAuthorization();
+                services.AddAuthorization();
 
-            return services;
+                return services;
+            }
         }
     }
 }

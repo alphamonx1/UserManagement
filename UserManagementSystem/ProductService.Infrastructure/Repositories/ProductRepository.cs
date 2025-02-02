@@ -4,7 +4,7 @@ using ProductService.Application.Repositories;
 using ProductService.Infrastructure.Database;
 using ProductService.Domain.Entities;
 
-namespace ProductService.Infrastructure.Repository
+namespace ProductService.Infrastructure.Repositories
 {
     public class ProductRepository : IProductRepository
     {
@@ -104,6 +104,20 @@ namespace ProductService.Infrastructure.Repository
                 };
             }
             return null;
+        }
+
+        public async Task<List<ProductResponseDTO>> SearchProductByNameAsync(string productName)
+        {
+            var products = _dbContext.Products.Where(p => p.ProductName.Contains(productName)).Select(p => new ProductResponseDTO
+            {
+                ProductId = p.ProductId,
+                ProductName = p.ProductName,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                Price = p.Price,
+                Quantity = p.Quantity
+            }).ToListAsync();
+            return await products;
         }
     }
 }
