@@ -45,7 +45,7 @@ namespace UserService.API.Controllers
             }
             catch (Exception e)
             {
-                return BadRequest(new { message = e.Message }); 
+                return BadRequest(new { message = e.Message });
             }
         }
 
@@ -63,6 +63,16 @@ namespace UserService.API.Controllers
                 return NotFound();
             }
             return Ok(userInformation);
+        }
+
+        [SwaggerOperation(Summary = "Log user out", Description = "Logout user")]
+        [SwaggerResponse(200, "User logged out successfully")]
+        [SwaggerResponse(401, "Unauthorized")]
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            return Ok(new { message = "User logged out successfully" });
         }
     }
 }
