@@ -247,6 +247,12 @@ app.UseExceptionHandler(appError =>
 
 ---
 
+## Testing 
+
+- Use Swagger or Postman to test with the Endpoint
+
+---
+
 ## 🎯 Notes
 
 - Ensure that **JWT is included in the Authorization header** when accessing ProductService.
