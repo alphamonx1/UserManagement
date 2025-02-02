@@ -4,7 +4,7 @@ This project implements **User Authentication** with **JWT** and a **Product Man
 
 ## 🚀 Features
 
-- User authentication with JWT 
+- User authentication with JWT 
 - Register, login, and logout users
 - Secure Product API with JWT-based authorization
 - Logging with **ILogger** for tracking requests and errors
@@ -144,27 +144,21 @@ POST /api/auth/logout
 #### 1️⃣ Get All Products (Requires JWT)
 
 ```http
-GET /api/products
+GET /api/product
 Authorization: Bearer your.jwt.token
 ```
 
-**Response:**
-
-```json
-[ {
-  "productId": 1,
-  "productName": "Laptop",
-  "description": "Gaming Laptop",
-  "imageUrl": "https://example.com/image.jpg",
-  "price": 1500.99,
-  "quantity": 10
-} ]
-```
-
-#### 2️⃣ Create a New Product (Requires JWT)
+#### 2️⃣ Get a Product by ID (Requires JWT)
 
 ```http
-POST /api/products
+GET /api/product/id?id={productId}
+Authorization: Bearer your.jwt.token
+```
+
+#### 3️⃣ Create a New Product (Requires JWT)
+
+```http
+POST /api/product
 Authorization: Bearer your.jwt.token
 ```
 
@@ -180,6 +174,27 @@ Authorization: Bearer your.jwt.token
 }
 ```
 
+#### 4️⃣ Update an Existing Product (Requires JWT)
+
+```http
+PUT /api/product/id?id={productId}
+Authorization: Bearer your.jwt.token
+```
+
+#### 5️⃣ Delete a Product (Requires JWT)
+
+```http
+DELETE /api/product/id?id={productId}
+Authorization: Bearer your.jwt.token
+```
+
+#### 6️⃣ Search Products by Name (Requires JWT)
+
+```http
+GET /api/product/search?name={productName}
+Authorization: Bearer your.jwt.token
+```
+
 ---
 
 ## 📜 Logging & Error Handling
@@ -191,15 +206,15 @@ The project uses `ILogger` for logging requests and errors. Logs are written to 
 Example usage in controllers:
 
 ```csharp
-private readonly ILogger<UserController> _logger;
+private readonly ILogger<ProductController> _logger;
 
-public UserController(ILogger<UserController> logger)
+public ProductController(ILogger<ProductController> logger)
 {
     _logger = logger;
 }
 
-_logger.LogInformation("User {Username} is logging in", request.Username);
-_logger.LogError(ex, "Error occurred while logging in user {Username}", request.Username);
+_logger.LogInformation("Fetching all products");
+_logger.LogError(ex, "Error occurred while retrieving products");
 ```
 
 ### 🚨 Global Exception Handling
