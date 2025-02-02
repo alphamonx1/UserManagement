@@ -10,9 +10,10 @@ namespace ProductService.API.Controllers
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController(IProductRepository productRepository) : ControllerBase
+    public class ProductController(IProductRepository productRepository, ILogger<ProductController> logger) : ControllerBase
     {
         private readonly IProductRepository _productRepository = productRepository;
+        private readonly ILogger<ProductController> _logger = logger;
 
         [SwaggerOperation(Summary = "Get all products", Description = "Retrieves all products from the database")]
         [SwaggerResponse(200, "Products found", typeof(Product))]
@@ -21,12 +22,20 @@ namespace ProductService.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductsAsync()
         {
-            var products = await _productRepository.GetProductsAsync();
-            if (products != null)
+            try
             {
-                return Ok(products);
+                var products = await _productRepository.GetProductsAsync();
+                if (products != null)
+                {
+                    return Ok(products);
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "Get a product by ID", Description = "Retrieves a product from the database")]
@@ -36,12 +45,20 @@ namespace ProductService.API.Controllers
         [HttpGet("id")]
         public async Task<IActionResult> GetProductByIdAsync(int id)
         {
-            var product = await _productRepository.GetProductByIdAsync(id);
-            if (product != null)
+            try
             {
-                return Ok(product);
+                var product = await _productRepository.GetProductByIdAsync(id);
+                if (product != null)
+                {
+                    return Ok(product);
+                }
+                return NotFound();
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "Create a new product", Description = "Adds a new product")]
@@ -51,8 +68,16 @@ namespace ProductService.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProductAsync([FromBody] CreateProductRequestDTO productRequestDTO)
         {
-            var product = await _productRepository.AddProductAsync(productRequestDTO);
-            return Ok(product);
+            try
+            {
+                var product = await _productRepository.AddProductAsync(productRequestDTO);
+                return Ok(product);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "Update an existing product", Description = "Update an existing product")]
@@ -62,12 +87,20 @@ namespace ProductService.API.Controllers
         [HttpPut("id")]
         public async Task<IActionResult> UpdateProductAsync(int id, [FromBody] UpdateProductRequestDTO productRequestDTO)
         {
-            var product = await _productRepository.UpdateProductAsync(id, productRequestDTO);
-            if (product != null)
+            try
             {
-                return Ok(product);
+                var product = await _productRepository.UpdateProductAsync(id, productRequestDTO);
+                if (product != null)
+                {
+                    return Ok(product);
+                }
+                return BadRequest();
             }
-            return BadRequest();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "Delete product", Description = "Delete product")]
@@ -76,13 +109,21 @@ namespace ProductService.API.Controllers
         [SwaggerResponse(401, "Unauthorized")]
         [HttpDelete("id")]
         public async Task<IActionResult> DeleteProductAsync(int id)
-        {
-            var result = await _productRepository.DeleteProductAsync(id);
-            if (result)
+        { 
+            try
             {
-                return Ok("Delete Successful");
+                var result = await _productRepository.DeleteProductAsync(id);
+                if (result)
+                {
+                    return Ok("Delete Successful");
+                }
+                return BadRequest("Record not found");
             }
-            return BadRequest("Record not found");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "Search Product", Description = "Search Product By Product Name")]
@@ -92,12 +133,20 @@ namespace ProductService.API.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> SearchProductByNameAsync(string name)
         {
-            var products = await _productRepository.SearchProductByNameAsync(name);
-            if (products != null)
+            try
             {
-                return Ok(products);
+                var products = await _productRepository.SearchProductByNameAsync(name);
+                if (products != null)
+                {
+                    return Ok(products);
+                }
+                return NoContent();
             }
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
     }
 }

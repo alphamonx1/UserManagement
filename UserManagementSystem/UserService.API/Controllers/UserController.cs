@@ -9,9 +9,10 @@ namespace UserService.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService) : ControllerBase
+    public class UserController(IUserService userService, ILogger<UserController> logger) : ControllerBase
     {
         private readonly IUserService _userService = userService;
+        private readonly ILogger<UserController> _logger = logger;
 
         [SwaggerOperation(Summary = "Login", Description = "Login")]
         [SwaggerResponse(200, "Login Successfull", typeof(User))]
@@ -19,13 +20,21 @@ namespace UserService.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
         {
-            var user = await _userService.Authenticate(loginRequest.Username, loginRequest.Password);
-            if (user == null)
+            try
             {
-                return BadRequest(new { message = "Username or password is incorrect" });
+                var user = await _userService.Authenticate(loginRequest.Username, loginRequest.Password);
+                if (user == null)
+                {
+                    return BadRequest(new { message = "Username or password is incorrect" });
+                }
+                var token = _userService.GenerateJwtToken(user);
+                return Ok(new { token });
             }
-            var token = _userService.GenerateJwtToken(user);
-            return Ok(new { token });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                throw;
+            }
         }
 
         [SwaggerOperation(Summary = "User Register", Description = "User register")]
