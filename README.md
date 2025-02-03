@@ -257,7 +257,7 @@ app.UseExceptionHandler(appError =>
 
 - Ensure that **JWT is included in the Authorization header** when accessing ProductService.
 - Modify `JwtSettings:Secret` with a secure **256-bit key**.
-- Logging can be extended with **Serilog** for file logging and external monitoring.
+- Please pull repository to your local machine and use Visual Studio for correct project structure
 
 ---
 
