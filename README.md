@@ -4,9 +4,11 @@ This project implements **User Authentication** with **JWT** and a **Product Man
 
 ## 🚀 Features
 
-- User authentication with JWT 
+- User authentication with JWT 
 - Register, login, and logout users
 - Secure Product API with JWT-based authorization
+- Logging with **ILogger** for tracking requests and errors
+- Global exception handling for **500 Internal Server Error**
 - ASP.NET Core 8 with Entity Framework Core
 - SQL Server as the database
 - Swagger API documentation
@@ -19,6 +21,7 @@ This project implements **User Authentication** with **JWT** and a **Product Man
 - **Entity Framework Core** (EF Core)
 - **JWT Authentication** (JSON Web Token)
 - **Microsoft SQL Server**
+- **ILogger** (built-in logging framework)
 - **Swagger** (API documentation)
 
 ---
@@ -80,7 +83,7 @@ dotnet run --project ProductService.API
 #### 1️⃣ Register a New User
 
 ```http
-POST /api/user/register
+POST /api/auth/register
 ```
 
 **Request Body:**
@@ -102,7 +105,7 @@ POST /api/user/register
 #### 2️⃣ Login and Get JWT Token
 
 ```http
-POST /api/user/login
+POST /api/auth/login
 ```
 
 **Request Body:**
@@ -125,30 +128,13 @@ POST /api/user/login
 #### 3️⃣ Logout User
 
 ```http
-POST /api/user/logout
+POST /api/auth/logout
 ```
 
 **Response:**
 
 ```json
 { "message": "User logged out successfully" }
-```
-
-#### 4️⃣ Get User Information (Requires JWT)
-
-```http
-GET /api/user/id?userId={GUID}
-Authorization: Bearer your.jwt.token
-```
-
-**Response:**
-
-```json
-{
-  "userId": "GUID",
-  "username": "test@user.com",
-  "fullName": "John Doe"
-}
 ```
 
 ---
@@ -158,47 +144,21 @@ Authorization: Bearer your.jwt.token
 #### 1️⃣ Get All Products (Requires JWT)
 
 ```http
-GET /api/products
+GET /api/product
 Authorization: Bearer your.jwt.token
 ```
 
-**Response:**
-
-```json
-[ {
-  "productId": 1,
-  "productName": "Laptop",
-  "description": "Gaming Laptop",
-  "imageUrl": "https://example.com/image.jpg",
-  "price": 1500.99,
-  "quantity": 10
-} ]
-```
-
-#### 2️⃣ Get Product By ID (Requires JWT)
+#### 2️⃣ Get a Product by ID (Requires JWT)
 
 ```http
-GET /api/products/id?id=1
+GET /api/product/id?id={productId}
 Authorization: Bearer your.jwt.token
-```
-
-**Response:**
-
-```json
-{
-  "productId": 1,
-  "productName": "Laptop",
-  "description": "Gaming Laptop",
-  "imageUrl": "https://example.com/image.jpg",
-  "price": 1500.99,
-  "quantity": 10
-}
 ```
 
 #### 3️⃣ Create a New Product (Requires JWT)
 
 ```http
-POST /api/products
+POST /api/product
 Authorization: Bearer your.jwt.token
 ```
 
@@ -214,37 +174,82 @@ Authorization: Bearer your.jwt.token
 }
 ```
 
-#### 4️⃣ Update Product (Requires JWT)
+#### 4️⃣ Update an Existing Product (Requires JWT)
 
 ```http
-PUT /api/products/id?id=1
+PUT /api/product/id?id={productId}
 Authorization: Bearer your.jwt.token
 ```
 
-**Request Body:**
+#### 5️⃣ Delete a Product (Requires JWT)
 
-```json
+```http
+DELETE /api/product/id?id={productId}
+Authorization: Bearer your.jwt.token
+```
+
+#### 6️⃣ Search Products by Name (Requires JWT)
+
+```http
+GET /api/product/search?name={productName}
+Authorization: Bearer your.jwt.token
+```
+
+---
+
+## 📜 Logging & Error Handling
+
+### 🔍 Logging with `ILogger`
+
+The project uses `ILogger` for logging requests and errors. Logs are written to **console** and can be extended to log files or monitoring tools like **Serilog**.
+
+Example usage in controllers:
+
+```csharp
+private readonly ILogger<ProductController> _logger;
+
+public ProductController(ILogger<ProductController> logger)
 {
-  "productName": "Updated Laptop",
-  "description": "Updated Description",
-  "imageUrl": "https://example.com/new-image.jpg",
-  "price": 1400.99,
-  "quantity": 5
+    _logger = logger;
 }
+
+_logger.LogInformation("Fetching all products");
+_logger.LogError(ex, "Error occurred while retrieving products");
 ```
 
-#### 5️⃣ Delete Product (Requires JWT)
+### 🚨 Global Exception Handling
 
-```http
-DELETE /api/products/id?id=1
-Authorization: Bearer your.jwt.token
+A middleware handles **500 Internal Server Errors** and logs the error details.
+
+```csharp
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (contextFeature != null)
+        {
+            logger.LogError($"Internal Server Error: {contextFeature.Error}");
+
+            await context.Response.WriteAsync(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "Internal Server Error. Please try again later."
+            }.ToString());
+        }
+    });
+});
 ```
 
-**Response:**
+---
 
-```json
-{ "message": "Product deleted successfully" }
-```
+## Testing 
+
+- Use Swagger or Postman to test with the Endpoint
 
 ---
 
@@ -252,6 +257,7 @@ Authorization: Bearer your.jwt.token
 
 - Ensure that **JWT is included in the Authorization header** when accessing ProductService.
 - Modify `JwtSettings:Secret` with a secure **256-bit key**.
+- Please pull repository to your local machine and use Visual Studio for correct project structure
 
 ---
 
